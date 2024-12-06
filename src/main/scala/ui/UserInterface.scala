@@ -1,17 +1,13 @@
 package userinterface
 
 import model.{Airport, Country, Runway}
-import parser.CSVParser
+import parser.{CSVParser, Cleaner}
 
 object UserInterface {
 
   def start(): Unit = {
-    val countries =
-      CSVParser.parseFile("src/main/resources/countries.csv", Country.fromCSV)
-    val airports =
-      CSVParser.parseFile("src/main/resources/airports.csv", Airport.fromCSV)
-    val runways =
-      CSVParser.parseFile("src/main/resources/runways.csv", Runway.fromCSV)
+    val (countries, airports, runways) = Cleaner.clean()
+
 
     println("Welcome to the Airport & Runway Information System!")
     var continue = true
@@ -72,6 +68,8 @@ object UserInterface {
         println("Country not found. Please try again.")
     }
   }
+  
+
 
   /** Reports Option: Generate reports based on airports and runways data. */
   private def reportsOption(

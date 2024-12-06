@@ -80,4 +80,42 @@ object Runway {
       None
     }
   }
+
+  /** Nettoie une instance de Runway */
+  def clean(runway: Runway): Runway = {
+    runway.copy(
+      airport_ident = runway.airport_ident.trim.toUpperCase, // Normalise en majuscules
+      length_ft = runway.length_ft.filter(_ > 0), // Supprime les longueurs invalides
+      width_ft = runway.width_ft.filter(_ > 0), // Supprime les largeurs invalides
+      surface = runway.surface.map(_.trim.toLowerCase), // Normalise les surfaces
+      le_ident = runway.le_ident.map(_.trim.toUpperCase), // Identifiant LE en majuscules
+      he_ident = runway.he_ident.map(_.trim.toUpperCase), // Identifiant HE en majuscules
+      le_latitude_deg = runway.le_latitude_deg.filter(isValidLatitude), // Valide les latitudes
+      le_longitude_deg = runway.le_longitude_deg.filter(isValidLongitude), // Valide les longitudes
+      he_latitude_deg = runway.he_latitude_deg.filter(isValidLatitude), // Valide les latitudes
+      he_longitude_deg = runway.he_longitude_deg.filter(isValidLongitude), // Valide les longitudes
+      le_heading_degT = runway.le_heading_degT.filter(isValidHeading), // Valide les orientations
+      he_heading_degT = runway.he_heading_degT.filter(isValidHeading) // Valide les orientations
+    )
+  }
+
+  /** Nettoie une liste complète de Runway */
+  def cleanAll(runways: List[Runway]): List[Runway] = {
+    runways.map(clean)
+  }
+
+  /** Vérifie si une latitude est valide (-90 à 90) */
+  private def isValidLatitude(latitude: Double): Boolean = {
+    latitude >= -90.0 && latitude <= 90.0
+  }
+
+  /** Vérifie si une longitude est valide (-180 à 180) */
+  private def isValidLongitude(longitude: Double): Boolean = {
+    longitude >= -180.0 && longitude <= 180.0
+  }
+
+  /** Vérifie si une orientation est valide (0 à 360 degrés) */
+  private def isValidHeading(heading: Double): Boolean = {
+    heading >= 0.0 && heading <= 360.0
+  }
 }
