@@ -19,7 +19,11 @@ object CSVParser {
     */
   def parseFile[T](filePath: String, fromCSV: String => Option[T]): List[T] = {
     Using(Source.fromFile(filePath)) { source =>
-      source.getLines().drop(1).flatMap(fromCSV).toList
+      source
+        .getLines()
+        .drop(1)
+        .flatMap(fromCSV)
+        .toList
     }.getOrElse(List())
   }
 }

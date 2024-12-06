@@ -8,6 +8,7 @@ object UserInterface {
   def start(): Unit = {
     val (countries, airports, runways) = Cleaner.clean()
 
+    Country.load_to_mongo(countries)
 
     println("Welcome to the Airport & Runway Information System!")
     var continue = true
@@ -68,8 +69,6 @@ object UserInterface {
         println("Country not found. Please try again.")
     }
   }
-  
-
 
   /** Reports Option: Generate reports based on airports and runways data. */
   private def reportsOption(
