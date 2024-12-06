@@ -2,3 +2,6 @@
 /project
 /.metals
 /target
+/.bloop
+
+application.conf
