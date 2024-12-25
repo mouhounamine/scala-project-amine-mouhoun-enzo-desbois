@@ -1,5 +1,6 @@
 /.vscode
-/project
+/project/project/
+/project/target
 /.metals
 /target
 /.bloop
