@@ -1,0 +1,5 @@
+# all application routes (Higher priority routes first)
+GET /explore                            controllers.HomeController.explore()
+GET /tutorial                           controllers.HomeController.tutorial()
+GET /                                   controllers.HomeController.index()
+

@@ -1,0 +1,25 @@
+
+Transformations à appliquer aux lignes du csv 'countries.csv': 
+      .replace("\",\"", "|")
+      .replace(",\"", "|")
+      .replace("\",", "|")
+      .replace("\"", "|")
+
+Exemples : 
+PAS DE KEYWORDS :
+    302672,"AD|Andorra|EU|http://en.wikipedia.org/wiki/Andorra",
+    302672|AD|Andorra|EU|http://en.wikipedia.org/wiki/Andorra",
+    302672|AD|Andorra|EU|http://en.wikipedia.org/wiki/Andorra|
+    302672|AD|Andorra|EU|http://en.wikipedia.org/wiki/Andorra|
+
+UN SEUL KEYWORD :
+    302618,"AE|United Arab Emirates|AS|http://en.wikipedia.org/wiki/United_Arab_Emirates|UAE"
+    302618|AE|United Arab Emirates|AS|http://en.wikipedia.org/wiki/United_Arab_Emirates|UAE"
+    302618|AE|United Arab Emirates|AS|http://en.wikipedia.org/wiki/United_Arab_Emirates|UAE"
+    302618|AE|United Arab Emirates|AS|http://en.wikipedia.org/wiki/United_Arab_Emirates|UAE|
+
+PLUSIEURS KEYWORDS (TRANSFORME EN LISTE PLUS TARD) :
+    302791,"BR|Brazil|SA|http://en.wikipedia.org/wiki/Brazil|Brasil, Brasilian"
+    302791|BR|Brazil|SA|http://en.wikipedia.org/wiki/Brazil|Brasil, Brasilian"
+    302791|BR|Brazil|SA|http://en.wikipedia.org/wiki/Brazil|Brasil, Brasilian"
+    302791|BR|Brazil|SA|http://en.wikipedia.org/wiki/Brazil|Brasil, Brasilian|
