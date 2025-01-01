@@ -1,10 +1,5 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
-# https://www.playframework.com/documentation/latest/ScalaRouting
-# ~~~~
-
-# An example controller showing a sample home page
-GET /                                   controllers.HomeController.index()
+# all application routes (Higher priority routes first)
 GET /explore                            controllers.HomeController.explore()
 GET /tutorial                           controllers.HomeController.tutorial()
+GET /                                   controllers.HomeController.index()
 

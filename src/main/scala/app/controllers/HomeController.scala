@@ -11,21 +11,22 @@ import play.api.mvc._
 class HomeController @Inject() (cc: ControllerComponents)
     extends AbstractController(cc) {
 
-  /** Create an Action to render an HTML page.
-    *
-    * The configuration in the `routes` file means that this method will be
-    * called when the application receives a `GET` request with a path of `/`.
+  /** Create an Action to render a string for the `/` endpoint.
     */
   def index() = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.index())
+    Ok("Welcome to the Home Page!")
   }
 
+  /** Create an Action to render a string for the `/explore` endpoint.
+    */
   def explore() = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.explore())
+    Ok("Explore the features of our application!")
   }
 
+  /** Create an Action to render a string for the `/tutorial` endpoint.
+    */
   def tutorial() = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.tutorial())
+    Ok("Follow our tutorial to get started!")
   }
 
 }
