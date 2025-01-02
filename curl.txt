@@ -1,0 +1,18 @@
+
+# Commandes curl pour tester les endpoints
+
+# 1. Tester la route / (HomeController)
+curl http://localhost:9000/
+
+# 2. Tester la route /query/:country (AirportController)
+curl http://localhost:9000/query/France
+curl http://localhost:9000/query/FR
+
+# 3. Tester la route /reports/topCountries (ReportController)
+curl http://localhost:9000/reports/topCountries
+
+# 4. Tester la route /reports/runwayTypes (ReportController)
+curl http://localhost:9000/reports/runwayTypes
+
+# 5. Tester la route /reports/latitude (ReportController)
+curl http://localhost:9000/reports/latitude

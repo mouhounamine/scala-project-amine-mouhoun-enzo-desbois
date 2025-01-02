@@ -1,3 +1,5 @@
-GET     /                   controllers.HomeController.index()
-GET     /explore            controllers.HomeController.explore()
-GET     /tutorial            controllers.HomeController.tutorial()
+GET     /                      controllers.HomeController.index()
+GET     /query/:country        controllers.AirportController.query(country: String)
+GET     /reports/topCountries  controllers.ReportController.topCountries()
+GET     /reports/runwayTypes   controllers.ReportController.runwayTypes()
+GET     /reports/latitude      controllers.ReportController.topRunwayLatitudes()

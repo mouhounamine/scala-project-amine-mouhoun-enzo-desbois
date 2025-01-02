@@ -13,5 +13,5 @@ scalaVersion := "2.13.15"
 
 libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "4.9.0"
 libraryDependencies += "com.typesafe" % "config" % "1.4.2"
-
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.9.2"
 

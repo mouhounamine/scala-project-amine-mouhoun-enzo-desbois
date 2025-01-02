@@ -1,5 +1,7 @@
 package model
 
+import play.api.libs.json._  
+
 case class Airport(
     id: Int,
     ident: String,
@@ -22,6 +24,8 @@ case class Airport(
 )
 
 object Airport {
+  implicit val airportFormat: OFormat[Airport] = Json.format[Airport]
+
   def fromCSV(line: String): Option[Airport] = {
     val fields = line.split(",", -1).map(_.trim)
 
@@ -53,5 +57,32 @@ object Airport {
     } else {
       None
     }
+  }
+
+  /** Nettoie un Airport et retourne un nouvel Airport nettoyé */
+  def clean(airport: Airport): Airport = {
+    airport.copy(
+      ident = airport.ident.trim.toUpperCase, // Identifiant en majuscules
+      `type` = airport.`type`.trim.toLowerCase, // Type en minuscules
+      name = airport.name.split(" ").map(_.capitalize).mkString(" ").trim, // Capitalisation correcte
+      elevation_ft = airport.elevation_ft.filter(_ >= 0), // Altitude non négative
+      continent = airport.continent.trim.toUpperCase, // Continent en majuscules
+      iso_country = airport.iso_country.trim.toUpperCase, // Code pays ISO en majuscules
+      iso_region = airport.iso_region.trim.toUpperCase, // Code région ISO en majuscules
+      municipality = airport.municipality.map(_.split(" ").map(_.capitalize).mkString(" ").trim), // Capitalisation des noms
+      scheduled_service = airport.scheduled_service.trim.toLowerCase, // Normalisation en minuscules ("yes"/"no")
+      gps_code = airport.gps_code.map(_.trim.toUpperCase), // Code GPS normalisé
+      iata_code = airport.iata_code.map(_.trim.toUpperCase), // Code IATA en majuscules
+      local_code = airport.local_code.map(_.trim.toUpperCase), // Code local en majuscules
+      home_link = airport.home_link.map(_.trim), // Lien nettoyé
+      wikipedia_link = airport.wikipedia_link.map(_.trim), // Lien nettoyé
+      keywords = airport.keywords
+        .map(_.split(",").toList.map(_.trim.toLowerCase).mkString(", ")) // Liste nettoyée et reformatée
+    )
+  }
+
+  /** Nettoie une liste complète d'aéroports */
+  def cleanAll(airports: List[Airport]): List[Airport] = {
+    airports.map(clean)
   }
 }
