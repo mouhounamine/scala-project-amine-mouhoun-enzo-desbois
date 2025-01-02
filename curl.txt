@@ -16,3 +16,12 @@ curl http://localhost:9000/reports/runwayTypes
 
 # 5. Tester la route /reports/latitude (ReportController)
 curl http://localhost:9000/reports/latitude
+
+# 6. Charger les données du fichier airports.csv dans MongoDB (à faire qu'une seule fois)
+curl -X GET http://localhost:9000/loader/airports
+
+# 7. Charger les données du fichier airports.csv dans MongoDB (à faire qu'une seule fois)
+curl -X GET http://localhost:9000/loader/runways
+
+# 8. Charger les données du fichier airports.csv dans MongoDB (à faire qu'une seule fois)
+curl -X GET http://localhost:9000/loader/countries

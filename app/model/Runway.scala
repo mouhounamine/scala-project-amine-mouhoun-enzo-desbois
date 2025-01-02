@@ -27,7 +27,7 @@ case class Runway(
 
 object Runway {
   def fromCSV(line: String): Option[Runway] = {
-    val fields = line.split(",", -1).map(_.trim)
+    val fields = line.replace("\"", "").split(",", -1).map(_.trim)
 
     if (fields.length >= 20) {
       Some(
@@ -42,8 +42,8 @@ object Runway {
             if (fields(4).isEmpty) None
             else Some(fields(4).toIntOption.getOrElse(0)),
           surface = if (fields(5).isEmpty) None else Some(fields(5)),
-          lighted = fields(6).toLowerCase == "true", // Convertit en booléen
-          closed = fields(7).toLowerCase == "true", // Convertit en booléen
+          lighted = fields(6).toLowerCase == "true", 
+          closed = fields(7).toLowerCase == "true", 
           le_ident = if (fields(8).isEmpty) None else Some(fields(8)),
           le_latitude_deg =
             if (fields(9).isEmpty) None

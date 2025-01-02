@@ -27,7 +27,7 @@ object Airport {
   implicit val airportFormat: OFormat[Airport] = Json.format[Airport]
 
   def fromCSV(line: String): Option[Airport] = {
-    val fields = line.split(",", -1).map(_.trim)
+    val fields = line.replace("\"", "").split(",", -1).map(_.trim)
 
     if (fields.length >= 18) {
       Some(

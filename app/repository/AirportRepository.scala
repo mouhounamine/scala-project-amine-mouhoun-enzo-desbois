@@ -4,8 +4,12 @@ import javax.inject._
 import model.Airport
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters
+import org.mongodb.scala.model.ReplaceOptions
 import play.api.libs.json._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 import repository.MongoConfig
 
 @Singleton
@@ -32,8 +36,65 @@ class AirportRepository @Inject()(implicit ec: ExecutionContext) {
     airportsCollection.find().toFuture().map { documents =>
       documents.collect {
         case doc if Json.parse(doc.toJson()).asOpt[Airport].isDefined =>
-          Json.parse(doc.toJson()).as[Airport] // Désérialiser en Airport
+          Json.parse(doc.toJson()).as[Airport] 
       }.toList
     }
   }
+
+  def loadToMongo(airports: List[Airport]): Future[Int] = {
+    if (airports.isEmpty) {
+      println("La liste des aéroports est vide. Aucun document à insérer.")
+      return Future.successful(0)
+    }
+
+    val isCollectionEmpty = Try {
+      Await.result(airportsCollection.countDocuments().toFuture(), 40.seconds) == 0
+    }.getOrElse(false)
+
+    if (!isCollectionEmpty) {
+      println("La collection 'airports' n'est pas vide. Aucun document n'a été inséré.")
+      return Future.successful(0) // Aucun document inséré
+    }
+
+    val documents = airports.map { airport =>
+      Document(
+        "id" -> airport.id,
+        "ident" -> airport.ident,
+        "type" -> airport.`type`,
+        "name" -> airport.name,
+        "latitude_deg" -> airport.latitude_deg,
+        "longitude_deg" -> airport.longitude_deg,
+        "elevation_ft" -> airport.elevation_ft.getOrElse(0),
+        "continent" -> airport.continent,
+        "iso_country" -> airport.iso_country,
+        "iso_region" -> airport.iso_region,
+        "municipality" -> airport.municipality.getOrElse(""),
+        "scheduled_service" -> airport.scheduled_service,
+        "gps_code" -> airport.gps_code.getOrElse(""),
+        "iata_code" -> airport.iata_code.getOrElse(""),
+        "local_code" -> airport.local_code.getOrElse(""),
+        "home_link" -> airport.home_link.getOrElse(""),
+        "wikipedia_link" -> airport.wikipedia_link.getOrElse(""),
+        "keywords" -> airport.keywords.getOrElse("")
+      )
+    }
+
+    if (documents.isEmpty) {
+      println("Aucun document valide n'a été généré à partir de la liste des aéroports.")
+      return Future.successful(0)
+    }
+
+    Try {
+      val insertFuture = airportsCollection.insertMany(documents)
+      Await.result(insertFuture.toFuture(), 40.seconds)
+      println(s"${documents.size} aéroports ont été insérés dans MongoDB.")
+    } match {
+      case Success(_) =>
+        Future.successful(documents.size) // Retourne le nombre de documents insérés
+      case Failure(ex) =>
+        println(s"Erreur lors de l'insertion des aéroports : ${ex.getMessage}")
+        Future.successful(0) // En cas d'erreur, renvoie 0
+    }
+  }
+
 }
