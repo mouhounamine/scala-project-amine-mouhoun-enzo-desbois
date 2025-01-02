@@ -1,0 +1,3 @@
+GET     /                   controllers.HomeController.index()
+GET     /explore            controllers.HomeController.explore()
+GET     /tutorial            controllers.HomeController.tutorial()
