@@ -1,9 +1,12 @@
-GET     /                      controllers.HomeController.index()
-GET     /query/:country        controllers.AirportController.query(country: String)
-GET     /reports/topCountries  controllers.ReportController.topCountries()
-GET     /reports/runwayTypes   controllers.ReportController.runwayTypes()
-GET     /reports/latitude      controllers.ReportController.topRunwayLatitudes()
+GET     /                         controllers.HomeController.index()
 
-GET     /loader/countries      controllers.LoaderController.loadCountries
-GET     /loader/runways        controllers.LoaderController.loadRunways
-GET     /loader/airports       controllers.LoaderController.loadAirports
+GET     /query/:country           controllers.AirportController.query(country: String)
+
+GET     /reports/topCountries     controllers.ReportController.topCountries()
+GET     /reports/bottomCountries  controllers.ReportController.bottomCountries()
+GET     /reports/runwayTypes      controllers.ReportController.runwayTypes()
+GET     /reports/latitude         controllers.ReportController.topRunwayLatitudes()
+
+GET     /loader/countries         controllers.LoaderController.loadCountries
+GET     /loader/runways           controllers.LoaderController.loadRunways
+GET     /loader/airports          controllers.LoaderController.loadAirports

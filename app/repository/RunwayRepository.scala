@@ -20,30 +20,39 @@ class RunwayRepository @Inject()(implicit ec: ExecutionContext) {
 
   private val runwaysCollection: MongoCollection[Document] =
     MongoConfig.database.getCollection("runways")
+  private val airportsCollection: MongoCollection[Document] =
+    MongoConfig.database.getCollection("airports")
 
-  // Méthode existante : récupération des types de pistes par pays
   def getRunwayTypesByCountry: Future[Map[String, Set[String]]] = {
-    runwaysCollection.aggregate(
-      Seq(
-        group("$iso_country", addToSet("runwayTypes", "$surface")),
-        project(fields(computed("country", "$_id"), include("runwayTypes"), excludeId()))
-      )
-    ).toFuture()
-      .map { documents =>
-        documents.map { doc =>
-          // Convertir le document en BsonDocument pour un accès typé
-          val bsonDoc = doc.toBsonDocument
-          val country = bsonDoc.getString("country").getValue
-          val runwayTypes = bsonDoc.getArray("runwayTypes").getValues.asScala
-            .map(_.asString().getValue).toSet
+    val runwaysFuture = runwaysCollection.find().toFuture()
+    val airportsFuture = airportsCollection.find().toFuture()
 
-          country -> runwayTypes
-        }.toMap
-      }
+    for {
+      runways <- runwaysFuture
+      airports <- airportsFuture
+    } yield {
+      val airportToCountry: Map[Int, String] = airports.flatMap { doc =>
+        val bsonDoc = doc.toBsonDocument
+        for {
+          id <- Option(bsonDoc.getInt32("id")).map(_.getValue)
+          country <- Option(bsonDoc.getString("iso_country")).map(_.getValue)
+        } yield id -> country
+      }.toMap
+
+      runways.flatMap { doc =>
+        val bsonDoc = doc.toBsonDocument
+
+        for {
+          airportRef <- Option(bsonDoc.getInt32("airport_ref")).map(_.getValue)
+          surface <- Option(bsonDoc.getString("surface")).map(_.getValue)
+          country <- airportToCountry.get(airportRef)
+        } yield country -> surface
+      }.groupBy(_._1)
+        .view.mapValues(_.map(_._2).toSet)
+        .toMap
+    }
   }
 
-
-  // Nouvelle méthode : insertion de données dans MongoDB
   def loadToMongo(runways: List[Runway]): Future[Int] = {
     if (runways.isEmpty) {
       println("La liste des pistes est vide. Aucun document à insérer.")
@@ -56,7 +65,7 @@ class RunwayRepository @Inject()(implicit ec: ExecutionContext) {
 
     if (!isCollectionEmpty) {
       println("La collection 'runways' n'est pas vide. Aucun document n'a été inséré.")
-      return Future.successful(0) // Aucun document inséré
+      return Future.successful(0) 
     }
 
     val documents = runways.map { runway =>
@@ -95,11 +104,23 @@ class RunwayRepository @Inject()(implicit ec: ExecutionContext) {
       println(s"${documents.size} pistes ont été insérées dans MongoDB.")
     } match {
       case Success(_) =>
-        Future.successful(documents.size) // Retourne le nombre de documents insérés
+        Future.successful(documents.size) 
       case Failure(ex) =>
         println(s"Erreur lors de l'insertion des pistes : ${ex.getMessage}")
-        Future.successful(0) // En cas d'erreur, renvoie 0
+        Future.successful(0) 
     }
   }
 
+  def getTopRunwayLatitudes(): Future[List[(String, Int)]] = {
+    runwaysCollection.find().toFuture().map { documents =>
+      documents.flatMap { doc =>
+        val bsonDoc = doc.toBsonDocument
+        Option(bsonDoc.getString("le_ident")).map(_.getValue) 
+      }
+      .groupBy(identity) 
+      .view.mapValues(_.size) 
+      .toList.sortBy(-_._2) 
+      .take(10) 
+    }
+  }
 }

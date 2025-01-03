@@ -25,7 +25,7 @@ class CountryRepository @Inject()(implicit ec: ExecutionContext) {
       println(
         "La collection 'countries' n'est pas vide. Aucun document n'a été inséré."
       )
-      return Future.successful(0) // Aucun document inséré
+      return Future.successful(0) 
     }
 
     val documents = countries.map { country =>
@@ -45,10 +45,10 @@ class CountryRepository @Inject()(implicit ec: ExecutionContext) {
       println(s"${documents.size} pays ont été insérés dans MongoDB.")
     } match {
       case Success(_) =>
-        Future.successful(documents.size) // Retourne le nombre de documents insérés
+        Future.successful(documents.size) 
       case Failure(ex) =>
         println(s"Erreur lors de l'insertion des pays : ${ex.getMessage}")
-        Future.successful(0) // En cas d'erreur, renvoie 0
+        Future.successful(0) 
     }
   }
 }

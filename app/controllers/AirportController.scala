@@ -12,7 +12,7 @@ class AirportController @Inject()(cc: ControllerComponents, airportService: Airp
 
   def query(country: String) = Action.async { implicit request: Request[AnyContent] =>
     airportService.getAirportsByCountry(country).map { airports =>
-      Ok(Json.toJson(airports)) // Utilisation de Json.toJson pour sérialiser les objets Airport en JSON
+      Ok(Json.toJson(airports)) 
     }
   }
 }

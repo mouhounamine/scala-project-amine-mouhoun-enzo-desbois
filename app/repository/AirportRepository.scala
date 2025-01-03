@@ -32,6 +32,19 @@ class AirportRepository @Inject()(implicit ec: ExecutionContext) {
     }
   }
 
+  def getAirportCountsByCountry(): Future[Map[String, Int]] = {
+    airportsCollection.find().toFuture().map { documents =>
+      documents
+        .flatMap { doc =>
+          val json = Json.parse(doc.toJson())
+          (json \ "iso_country").asOpt[String]
+        }
+        .groupBy(identity) 
+        .view.mapValues(_.size)
+        .toMap
+    }
+  }
+
   def getAllAirports(): Future[List[Airport]] = {
     airportsCollection.find().toFuture().map { documents =>
       documents.collect {
@@ -53,7 +66,7 @@ class AirportRepository @Inject()(implicit ec: ExecutionContext) {
 
     if (!isCollectionEmpty) {
       println("La collection 'airports' n'est pas vide. Aucun document n'a été inséré.")
-      return Future.successful(0) // Aucun document inséré
+      return Future.successful(0) 
     }
 
     val documents = airports.map { airport =>
@@ -90,11 +103,10 @@ class AirportRepository @Inject()(implicit ec: ExecutionContext) {
       println(s"${documents.size} aéroports ont été insérés dans MongoDB.")
     } match {
       case Success(_) =>
-        Future.successful(documents.size) // Retourne le nombre de documents insérés
+        Future.successful(documents.size) 
       case Failure(ex) =>
         println(s"Erreur lors de l'insertion des aéroports : ${ex.getMessage}")
-        Future.successful(0) // En cas d'erreur, renvoie 0
+        Future.successful(0) 
     }
   }
-
 }

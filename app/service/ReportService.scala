@@ -10,21 +10,23 @@ class ReportService @Inject()(
     runwayRepository: RunwayRepository
 )(implicit ec: ExecutionContext) {
 
-  // Méthode existante pour les pays avec le plus grand nombre d'aéroports
-  def getTopCountries: Future[List[(String, Int)]] = {
-    airportRepository.getAllAirports().map { airports =>
-      // Compter le nombre d'aéroports par pays
-      val countryCounts = airports.groupBy(_.iso_country).map {
-        case (country, airports) => (country, airports.size)
-      }
-
-      // Trier par nombre d'aéroports et prendre les 10 premiers
-      countryCounts.toList.sortBy(-_._2).take(10)
+  def getTopCountries(): Future[List[(String, Int)]] = {
+    airportRepository.getAirportCountsByCountry().map { countryCounts =>
+      countryCounts.toList.sortBy(-_._2).take(10) 
     }
   }
 
-  // Nouvelle méthode pour obtenir les types de pistes par pays
+  def getBottomCountries(): Future[List[(String, Int)]] = {
+    airportRepository.getAirportCountsByCountry().map { countryCounts =>
+      countryCounts.toList.sortBy(_._2).take(10) 
+    }
+  }
+
   def getRunwayTypesByCountry: Future[Map[String, Set[String]]] = {
     runwayRepository.getRunwayTypesByCountry
+  }
+  
+  def getTopRunwayLatitudes(): Future[List[(String, Int)]] = {
+    runwayRepository.getTopRunwayLatitudes()
   }
 }

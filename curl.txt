@@ -5,23 +5,23 @@
 curl http://localhost:9000/
 
 # 2. Tester la route /query/:country (AirportController)
-curl http://localhost:9000/query/France
-curl http://localhost:9000/query/FR
+curl http://localhost:9000/query/France [NOT YET]
+curl http://localhost:9000/query/FR [DONE]
 
 # 3. Tester la route /reports/topCountries (ReportController)
-curl http://localhost:9000/reports/topCountries
+curl http://localhost:9000/reports/topCountries [DONE]
 
 # 4. Tester la route /reports/runwayTypes (ReportController)
-curl http://localhost:9000/reports/runwayTypes
+curl http://localhost:9000/reports/runwayTypes [DONE]
 
 # 5. Tester la route /reports/latitude (ReportController)
 curl http://localhost:9000/reports/latitude
 
 # 6. Charger les données du fichier airports.csv dans MongoDB (à faire qu'une seule fois)
-curl -X GET http://localhost:9000/loader/airports
+curl -X GET http://localhost:9000/loader/airports [DONE]
 
 # 7. Charger les données du fichier airports.csv dans MongoDB (à faire qu'une seule fois)
-curl -X GET http://localhost:9000/loader/runways
+curl -X GET http://localhost:9000/loader/runways [DONE]
 
 # 8. Charger les données du fichier airports.csv dans MongoDB (à faire qu'une seule fois)
-curl -X GET http://localhost:9000/loader/countries
+curl -X GET http://localhost:9000/loader/countries [DONE]
