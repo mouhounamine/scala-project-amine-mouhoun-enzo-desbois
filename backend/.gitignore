@@ -1,0 +1,7 @@
+/.vscode
+/project
+/.metals
+/target
+/.bloop
+
+application.conf
