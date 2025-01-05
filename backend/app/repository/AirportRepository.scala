@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 import repository.MongoConfig
 
 @Singleton
-class AirportRepository @Inject()(implicit ec: ExecutionContext) {
+class AirportRepository @Inject()(countryRepository: CountryRepository)(implicit ec: ExecutionContext) {
 
   private val db = MongoConfig.database
 
@@ -21,14 +21,37 @@ class AirportRepository @Inject()(implicit ec: ExecutionContext) {
 
   implicit val airportFormat: OFormat[Airport] = Json.format[Airport]
 
-  def getAirportsByCountry(country: String): Future[List[Airport]] = {
-    val query = Filters.equal("iso_country", country)
+  def getAirportsByCountry(isoCode: String): Future[List[Airport]] = {
+      val query = Filters.equal("iso_country", isoCode)
+      airportsCollection
+        .find(query)
+        .toFuture()
+        .map { documents =>
+          documents.collect {
+            case doc if Json.parse(doc.toJson()).asOpt[Airport].isDefined =>
+              Json.parse(doc.toJson()).as[Airport]
+          }.toList
+        }
+  }
 
-    airportsCollection.find(query).toFuture().map { documents =>
-      documents.collect {
-        case doc if Json.parse(doc.toJson()).asOpt[Airport].isDefined =>
-          Json.parse(doc.toJson()).as[Airport] 
-      }.toList 
+    // Nouvelle méthode qui gère code ou nom :
+  def getAirportsByCountryOrName(countryOrCode: String): Future[List[Airport]] = {
+    // 1) Tenter la recherche comme si c'était le code ISO
+    getAirportsByCountry(countryOrCode).flatMap { airports =>
+      if (airports.nonEmpty) {
+        // on a trouvé en supposant que countryOrCode est un code
+        Future.successful(airports)
+      } else {
+        // 2) Sinon, on essaie de trouver un code depuis la table "countries"
+        countryRepository.getCodeByName(countryOrCode).flatMap {
+          case Some(code) =>
+            // on relance la recherche avec iso_country = code
+            getAirportsByCountry(code)
+          case None =>
+            // rien trouvé => liste vide
+            Future.successful(Nil)
+        }
+      }
     }
   }
 

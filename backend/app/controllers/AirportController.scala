@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AirportController @Inject()(cc: ControllerComponents, airportService: AirportService)(implicit ec: ExecutionContext) extends AbstractController(cc) {
 
   def query(country: String) = Action.async { implicit request: Request[AnyContent] =>
-    airportService.getAirportsByCountry(country).map { airports =>
+    airportService.getAirportsByCountry(country.toUpperCase).map { airports =>
       Ok(Json.toJson(airports)) 
     }
   }

@@ -89,7 +89,7 @@ object Runway {
       airport_ident = runway.airport_ident.trim.toUpperCase, // Normalise en majuscules
       length_ft = runway.length_ft.filter(_ > 0), // Supprime les longueurs invalides
       width_ft = runway.width_ft.filter(_ > 0), // Supprime les largeurs invalides
-      surface = runway.surface.map(_.trim.toLowerCase), // Normalise les surfaces
+      surface = runway.surface.filter(_.nonEmpty).filterNot(_.contains("\"")).filterNot(_.contains("\'")).map(_.trim.toLowerCase), // Normalise les surfaces
       le_ident = runway.le_ident.map(_.trim.toUpperCase), // Identifiant LE en majuscules
       he_ident = runway.he_ident.map(_.trim.toUpperCase), // Identifiant HE en majuscules
       le_latitude_deg = runway.le_latitude_deg.filter(isValidLatitude), // Valide les latitudes

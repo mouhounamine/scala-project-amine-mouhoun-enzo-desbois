@@ -10,6 +10,6 @@ import play.api.libs.json._
 class AirportService @Inject()(airportRepository: AirportRepository)(implicit ec: ExecutionContext) {
 
   def getAirportsByCountry(country: String): Future[List[Airport]] = {
-    airportRepository.getAirportsByCountry(country)
+    airportRepository.getAirportsByCountryOrName(country)
   }
 }

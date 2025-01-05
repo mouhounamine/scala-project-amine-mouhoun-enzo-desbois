@@ -3,22 +3,40 @@ package repositories
 import javax.inject._
 import model.Country
 import org.mongodb.scala._
+import org.mongodb.scala.model.Filters
 import org.mongodb.scala.bson.collection.mutable.Document
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 import repository.MongoConfig
+import play.api.libs.json.Json
 
 @Singleton
 class CountryRepository @Inject()(implicit ec: ExecutionContext) {
 
-  private val countryCollection: MongoCollection[Document] =
-    MongoConfig.database.getCollection("countries")
+  private val db = MongoConfig.database
+
+  private val countriesCollection: MongoCollection[Document] = db.getCollection("countries")
+
+  implicit val countryFormat = Json.format[Country]
+
+  // Récupère le code ISO d'un pays à partir du nom (ex: "France" -> "FR")
+  def getCodeByName(countryName: String): Future[Option[String]] = {
+    countriesCollection
+      .find(Filters.equal("name", countryName))
+      .first()
+      .toFuture()
+      .map { docOpt =>
+        Option(docOpt).map { doc =>
+          Json.parse(doc.toJson()).as[Country].code
+        }
+      }
+  }
 
   def loadToMongo(countries: List[Country]): Future[Int] = {
     val isCollectionEmpty = Try {
-      Await.result(countryCollection.countDocuments().toFuture(), 10.seconds) == 0
+      Await.result(countriesCollection.countDocuments().toFuture(), 10.seconds) == 0
     }.getOrElse(false)
 
     if (!isCollectionEmpty) {
@@ -40,7 +58,7 @@ class CountryRepository @Inject()(implicit ec: ExecutionContext) {
     }
 
     Try {
-      val insertFuture = countryCollection.insertMany(documents)
+      val insertFuture = countriesCollection.insertMany(documents)
       Await.result(insertFuture.toFuture(), 10.seconds)
       println(s"${documents.size} pays ont été insérés dans MongoDB.")
     } match {
