@@ -34,21 +34,15 @@ class AirportRepository @Inject()(countryRepository: CountryRepository)(implicit
         }
   }
 
-    // Nouvelle méthode qui gère code ou nom :
   def getAirportsByCountryOrName(countryOrCode: String): Future[List[Airport]] = {
-    // 1) Tenter la recherche comme si c'était le code ISO
     getAirportsByCountry(countryOrCode).flatMap { airports =>
       if (airports.nonEmpty) {
-        // on a trouvé en supposant que countryOrCode est un code
         Future.successful(airports)
       } else {
-        // 2) Sinon, on essaie de trouver un code depuis la table "countries"
         countryRepository.getCodeByName(countryOrCode).flatMap {
           case Some(code) =>
-            // on relance la recherche avec iso_country = code
             getAirportsByCountry(code)
           case None =>
-            // rien trouvé => liste vide
             Future.successful(Nil)
         }
       }

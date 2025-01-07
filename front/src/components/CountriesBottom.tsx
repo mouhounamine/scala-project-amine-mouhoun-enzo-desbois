@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getTopCountries } from "@/app/services/api";
+import { getBottomCountries } from "@/app/services/api";
 import { Country } from "@/app/models/types";
-import TopCountry from "./TopCountry";
+import BottomCountry from "./BottomCountry";
 
-export default function Countries() {
+export default function CountriesBottom() {
   const [topCountries, setTopCountries] = useState<Country[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    getTopCountries()
+    getBottomCountries()
       .then(data => {
         setTopCountries(data);
         setLoading(false);
@@ -25,7 +25,7 @@ export default function Countries() {
   return (
     <div className="w-full flex justify-center">
         <div className="w-[60%] flex-wrap">
-            <h1>10 countries with highest number of airports (with count).</h1>
+            <h1>10 countries with lowest number of airports (with count).</h1>
         </div>
       {loading ? (
         <div className="flex flex-col justify-center items-center space-x-2">
@@ -52,7 +52,7 @@ export default function Countries() {
       ) : (
         <ul className="mt-4 space-y-4 w-full max-w-xl">
           {topCountries.map((country, index) => (
-            <TopCountry key={index} country={country} />
+            <BottomCountry key={index} country={country} />
           ))}
         </ul>
       )}

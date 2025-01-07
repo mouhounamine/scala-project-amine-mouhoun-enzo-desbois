@@ -5,9 +5,10 @@ import AirportQuery from "./AirportQuery";
 import RunwayTypes from "./RunwayQuery";
 import LatitudeReportComponent from "./ReportLatitude";
 import Countries from "./Countries";
+import CountriesBottom from "./CountriesBottom";
 
 export default function HomeComponent() {
-  const [activeTab, setActiveTab] = useState<"airportQuery" | "runwayTypes" | "latitude" | "topCountries">("airportQuery");
+  const [activeTab, setActiveTab] = useState<"airportQuery" | "runwayTypes" | "latitude" | "topCountries" | "bottomCountries">("airportQuery");
 
   return (
     <div className="min-h-screen p-4 bg-gray-100">
@@ -45,7 +46,15 @@ export default function HomeComponent() {
             activeTab === "topCountries" ? "bg-blue-600 text-white" : "bg-white"
           }`}
         >
-          TopCountry
+          Top Countries
+        </button>
+        <button
+          onClick={() => setActiveTab("bottomCountries")}
+          className={`px-4 py-2 rounded ${
+            activeTab === "bottomCountries" ? "bg-blue-600 text-white" : "bg-white"
+          }`}
+        >
+          Bottom Countries
         </button>
       </div>
 
@@ -55,6 +64,7 @@ export default function HomeComponent() {
         {activeTab === "runwayTypes" && <RunwayTypes />}
         {activeTab === "latitude" && <LatitudeReportComponent />}
         {activeTab === "topCountries" && <Countries />}
+        {activeTab === "bottomCountries" && <CountriesBottom />}
       </div>
     </div>
   );
