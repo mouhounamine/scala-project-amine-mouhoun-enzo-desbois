@@ -4,6 +4,7 @@ import javax.inject._
 import model.Country
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters
+import org.mongodb.scala.model.Filters.regex
 import org.mongodb.scala.bson.collection.mutable.Document
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Await
@@ -21,18 +22,31 @@ class CountryRepository @Inject()(implicit ec: ExecutionContext) {
 
   implicit val countryFormat = Json.format[Country]
 
-  // Récupère le code ISO d'un pays à partir du nom (ex: "France" -> "FR")
-  def getCodeByName(countryName: String): Future[Option[String]] = {
+  def getCodeByNameFuzzy(countryName: String): Future[Option[String]] = {
+    val exactQuery   = Filters.regex("name", s"(?i)^${countryName}$$")      // ^ and $ => entire string
+    val partialQuery = Filters.regex("name", s"(?i).*${countryName}.*")     // substring ( to avoid the problem United States vs United States Minor Outlying Islands)
+
     countriesCollection
-      .find(Filters.equal("name", countryName))
-      .first()
+      .find(exactQuery)
       .toFuture()
-      .map { docOpt =>
-        Option(docOpt).map { doc =>
-          Json.parse(doc.toJson()).as[Country].code
+      .flatMap { exactDocs =>
+        if (exactDocs.nonEmpty) {
+          Future.successful(
+            Some(Json.parse(exactDocs.head.toJson()).as[Country].code)
+          )
+        } else {
+          countriesCollection
+            .find(partialQuery)
+            .toFuture()
+            .map { partialDocs =>
+              partialDocs.headOption.map { doc =>
+                Json.parse(doc.toJson()).as[Country].code
+              }
+            }
         }
       }
   }
+
 
   def loadToMongo(countries: List[Country]): Future[Int] = {
     val isCollectionEmpty = Try {

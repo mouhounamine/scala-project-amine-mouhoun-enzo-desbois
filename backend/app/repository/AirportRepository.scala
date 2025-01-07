@@ -39,7 +39,7 @@ class AirportRepository @Inject()(countryRepository: CountryRepository)(implicit
       if (airports.nonEmpty) {
         Future.successful(airports)
       } else {
-        countryRepository.getCodeByName(countryOrCode).flatMap {
+        countryRepository.getCodeByNameFuzzy(countryOrCode).flatMap {
           case Some(code) =>
             getAirportsByCountry(code)
           case None =>
