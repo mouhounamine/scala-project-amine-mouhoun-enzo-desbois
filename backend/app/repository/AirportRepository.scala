@@ -74,7 +74,7 @@ class AirportRepository @Inject()(countryRepository: CountryRepository)(implicit
   def loadToMongo(airports: List[Airport]): Future[Int] = {
     if (airports.isEmpty) {
       println("La liste des aéroports est vide. Aucun document à insérer.")
-      return Future.successful(0)
+      Future.successful(0)
     }
 
     val isCollectionEmpty = Try {
@@ -83,7 +83,7 @@ class AirportRepository @Inject()(countryRepository: CountryRepository)(implicit
 
     if (!isCollectionEmpty) {
       println("La collection 'airports' n'est pas vide. Aucun document n'a été inséré.")
-      return Future.successful(0) 
+      Future.successful(0) 
     }
 
     val documents = airports.map { airport =>
@@ -111,7 +111,7 @@ class AirportRepository @Inject()(countryRepository: CountryRepository)(implicit
 
     if (documents.isEmpty) {
       println("Aucun document valide n'a été généré à partir de la liste des aéroports.")
-      return Future.successful(0)
+      Future.successful(0)
     }
 
     Try {

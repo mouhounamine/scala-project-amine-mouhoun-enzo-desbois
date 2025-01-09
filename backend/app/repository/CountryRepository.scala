@@ -23,29 +23,33 @@ class CountryRepository @Inject()(implicit ec: ExecutionContext) {
   implicit val countryFormat = Json.format[Country]
 
   def getCodeByNameFuzzy(countryName: String): Future[Option[String]] = {
-    val exactQuery   = Filters.regex("name", s"(?i)^${countryName}$$")      // ^ and $ => entire string
-    val partialQuery = Filters.regex("name", s"(?i).*${countryName}.*")     // substring ( to avoid the problem United States vs United States Minor Outlying Islands)
+    val exactQuery   = Filters.regex("name", s"(?i)^${countryName}$$")  // Recherche exacte
+    val partialQuery = Filters.regex("name", s"(?i).*${countryName}.*") // Sous-chaîne (évite conflit, ex. "United States" vs "United States Minor...")
 
     countriesCollection
       .find(exactQuery)
       .toFuture()
       .flatMap { exactDocs =>
-        if (exactDocs.nonEmpty) {
-          Future.successful(
-            Some(Json.parse(exactDocs.head.toJson()).as[Country].code)
-          )
-        } else {
-          countriesCollection
-            .find(partialQuery)
-            .toFuture()
-            .map { partialDocs =>
-              partialDocs.headOption.map { doc =>
-                Json.parse(doc.toJson()).as[Country].code
+        // On regarde s’il y a au moins un document correspondant à la recherche exacte
+        exactDocs.headOption match {
+          case Some(doc) =>
+            val code = Json.parse(doc.toJson()).as[Country].code
+            Future.successful(Some(code))
+
+          // Sinon, on tente la recherche partielle
+          case None =>
+            countriesCollection
+              .find(partialQuery)
+              .toFuture()
+              .map { partialDocs =>
+                partialDocs.headOption.map { doc =>
+                  Json.parse(doc.toJson()).as[Country].code
+                }
               }
-            }
         }
       }
   }
+
 
 
   def loadToMongo(countries: List[Country]): Future[Int] = {
@@ -57,7 +61,7 @@ class CountryRepository @Inject()(implicit ec: ExecutionContext) {
       println(
         "La collection 'countries' n'est pas vide. Aucun document n'a été inséré."
       )
-      return Future.successful(0) 
+      Future.successful(0) 
     }
 
     val documents = countries.map { country =>

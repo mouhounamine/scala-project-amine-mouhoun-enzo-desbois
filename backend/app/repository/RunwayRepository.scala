@@ -24,39 +24,51 @@ class RunwayRepository @Inject()(implicit ec: ExecutionContext) {
     MongoConfig.database.getCollection("airports")
 
   def getRunwayTypesByCountry: Future[Map[String, Set[String]]] = {
-    val runwaysFuture = runwaysCollection.find().toFuture()
+    val runwaysFuture  = runwaysCollection.find().toFuture()
     val airportsFuture = airportsCollection.find().toFuture()
 
-    for {
-      runways <- runwaysFuture
-      airports <- airportsFuture
-    } yield {
-      val airportToCountry: Map[Int, String] = airports.flatMap { doc =>
-        val bsonDoc = doc.toBsonDocument
-        for {
-          id <- Option(bsonDoc.getInt32("id")).map(_.getValue)
-          country <- Option(bsonDoc.getString("iso_country")).map(_.getValue)
-        } yield id -> country
-      }.toMap
+    // On "zip" les deux Futures pour les récupérer simultanément.
+    runwaysFuture.zip(airportsFuture).map { case (runways, airports) =>
 
-      runways.flatMap { doc =>
-        val bsonDoc = doc.toBsonDocument
+      val airportToCountry: Map[Int, String] =
+        airports.flatMap { doc =>
+          val bsonDoc = doc.toBsonDocument
 
-        for {
-          airportRef <- Option(bsonDoc.getInt32("airport_ref")).map(_.getValue)
-          surface <- Option(bsonDoc.getString("surface")).map(_.getValue)
-          country <- airportToCountry.get(airportRef)
-        } yield country -> surface
-      }.groupBy(_._1)
-        .view.mapValues(_.map(_._2).toSet)
+          Option(bsonDoc.getInt32("id")).map(_.getValue).flatMap { id =>
+            Option(bsonDoc.getString("iso_country")).map(_.getValue).map { country =>
+              id -> country
+            }
+          }
+        }.toMap
+
+      // Construction de la liste (country -> surface) à partir des runways
+      val countryToSurfacePairs: Seq[(String, String)] =
+        runways.flatMap { doc =>
+          val bsonDoc = doc.toBsonDocument
+
+          Option(bsonDoc.getInt32("airport_ref")).map(_.getValue).flatMap { airportRef =>
+            Option(bsonDoc.getString("surface")).map(_.getValue).flatMap { surface =>
+              airportToCountry.get(airportRef).map { country =>
+                (country, surface)
+              }
+            }
+          }
+        }
+
+      // Regroupement par clé (country), puis création d’un Set de surfaces
+      countryToSurfacePairs
+        .groupBy(_._1)
+        .view
+        .mapValues(_.map(_._2).toSet)
         .toMap
     }
   }
 
+
   def loadToMongo(runways: List[Runway]): Future[Int] = {
     if (runways.isEmpty) {
       println("La liste des pistes est vide. Aucun document à insérer.")
-      return Future.successful(0)
+      Future.successful(0)
     }
 
     val isCollectionEmpty = Try {
@@ -65,7 +77,7 @@ class RunwayRepository @Inject()(implicit ec: ExecutionContext) {
 
     if (!isCollectionEmpty) {
       println("La collection 'runways' n'est pas vide. Aucun document n'a été inséré.")
-      return Future.successful(0) 
+      Future.successful(0) 
     }
 
     val documents = runways.map { runway =>
@@ -95,7 +107,7 @@ class RunwayRepository @Inject()(implicit ec: ExecutionContext) {
 
     if (documents.isEmpty) {
       println("Aucun document valide n'a été généré à partir de la liste des pistes.")
-      return Future.successful(0)
+      Future.successful(0)
     }
 
     Try {
